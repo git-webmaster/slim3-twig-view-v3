@@ -38,7 +38,7 @@ class TwigMiddleware implements MiddlewareInterface
     /**
      * @var string|null
      */
-    protected $attributeName;
+    protected $serverRequestAttributeName;
 
     /**
      * @param App    $app
@@ -73,38 +73,21 @@ class TwigMiddleware implements MiddlewareInterface
     }
 
     /**
-     * @param App    $app
-     * @param Twig   $twig
-     * @param string $attributeName
-     *
-     * @return TwigMiddleware
-     */
-    public static function create(App $app, Twig $twig, string $attributeName = 'view'): self
-    {
-        return new self(
-            $twig,
-            $app->getRouteCollector()->getRouteParser(),
-            $app->getBasePath(),
-            $attributeName
-        );
-    }
-
-    /**
      * @param Twig                 $twig
      * @param RouteParserInterface $routeParser
      * @param string               $basePath
-     * @param string|null          $attributeName
+     * @param string|null          $serverRequestAttributeName
      */
     public function __construct(
         Twig $twig,
         RouteParserInterface $routeParser,
         string $basePath = '',
-        ?string $attributeName = null
+        ?string $serverRequestAttributeName = null
     ) {
         $this->twig = $twig;
         $this->routeParser = $routeParser;
         $this->basePath = $basePath;
-        $this->attributeName = $attributeName;
+        $this->serverRequestAttributeName = $serverRequestAttributeName;
     }
 
     /**
@@ -118,8 +101,8 @@ class TwigMiddleware implements MiddlewareInterface
         $extension = new TwigExtension();
         $this->twig->addExtension($extension);
 
-        if ($this->attributeName !== null) {
-            $request = $request->withAttribute($this->attributeName, $this->twig);
+        if ($this->serverRequestAttributeName !== null) {
+            $request = $request->withAttribute($this->serverRequestAttributeName, $this->twig);
         }
 
         return $handler->handle($request);

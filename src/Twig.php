@@ -12,8 +12,6 @@ namespace Slim\Views;
 use ArrayAccess;
 use ArrayIterator;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use RuntimeException;
 use Throwable;
 use Twig\Environment;
 use Twig\Error\LoaderError;
@@ -30,7 +28,7 @@ use Twig\RuntimeLoader\RuntimeLoaderInterface;
  * This class is a Slim Framework view helper built on top of the Twig templating component.
  * Twig is a PHP component created by Fabien Potencier.
  *
- * @link https://twig.symfony.com/
+ * @link http://twig.sensiolabs.org/
  */
 class Twig implements ArrayAccess
 {
@@ -56,54 +54,14 @@ class Twig implements ArrayAccess
     protected $defaultVariables = [];
 
     /**
-     * @param ServerRequestInterface $request
-     * @param string                 $attributeName
-     *
-     * @return Twig
-     */
-    public static function fromRequest(ServerRequestInterface $request, string $attributeName = 'view'): self
-    {
-        $twig = $request->getAttribute($attributeName);
-        if ($twig === null || !($twig instanceof self)) {
-            throw new RuntimeException(
-                'Twig could not be found in the server request attributes using the key "'. $attributeName .'".'
-            );
-        }
-
-        return $twig;
-    }
-
-    /**
      * @param string|array $path     Path(s) to templates directory
      * @param array        $settings Twig environment settings
      *
      * @throws LoaderError When the template cannot be found
-     *
-     * @return Twig
      */
-    public static function create($path, array $settings = []): self
+    public function __construct($path, array $settings = [])
     {
-        $loader = new FilesystemLoader();
-
-        $paths = is_array($path) ? $path : [$path];
-        foreach ($paths as $namespace => $path) {
-            if (is_string($namespace)) {
-                $loader->setPaths($path, $namespace);
-            } else {
-                $loader->addPath($path);
-            }
-        }
-
-        return new self($loader, $settings);
-    }
-
-    /**
-     * @param LoaderInterface $loader   Twig loader
-     * @param array           $settings Twig environment settings
-     */
-    public function __construct(LoaderInterface $loader, array $settings = [])
-    {
-        $this->loader = $loader;
+        $this->loader = $this->createLoader(is_string($path) ? [$path] : $path);
         $this->environment = new Environment($this->loader, $settings);
     }
 
@@ -205,6 +163,30 @@ class Twig implements ArrayAccess
     }
 
     /**
+     * Create a loader with the given path
+     *
+     * @param array $paths
+     *
+     * @throws LoaderError When the template cannot be found
+     *
+     * @return FilesystemLoader
+     */
+    private function createLoader(array $paths): FilesystemLoader
+    {
+        $loader = new FilesystemLoader();
+
+        foreach ($paths as $namespace => $path) {
+            if (is_string($namespace)) {
+                $loader->setPaths($path, $namespace);
+            } else {
+                $loader->addPath($path);
+            }
+        }
+
+        return $loader;
+    }
+
+    /**
      * Return Twig loader
      *
      * @return LoaderInterface
@@ -245,9 +227,6 @@ class Twig implements ArrayAccess
      */
     public function offsetGet($key)
     {
-        if (!$this->offsetExists($key)) {
-            return null;
-        }
         return $this->defaultVariables[$key];
     }
 
