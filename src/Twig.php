@@ -59,7 +59,7 @@ class Twig implements ArrayAccess
      *
      * @throws LoaderError When the template cannot be found
      */
-    public function __construct(string $path, array $settings = [])
+    public function __construct($path, array $settings = [])
     {
         $this->loader = $this->createLoader(is_string($path) ? [$path] : $path);
         $this->environment = new Environment($this->loader, $settings);
