@@ -54,7 +54,7 @@ class Twig implements ArrayAccess
     protected $defaultVariables = [];
 
     /**
-     * @param string|array $path     Path(s) to templates directory
+     * @param string|array|FilesystemLoader $path     Path(s) to templates directory
      * @param array        $settings Twig environment settings
      *
      * @throws LoaderError When the template cannot be found
